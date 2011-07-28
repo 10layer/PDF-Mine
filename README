@@ -4,7 +4,7 @@ This library deprecates PDF Link Finder. The big difference is that PDF Link Fin
 
 == So what does it do? ==
 
-PDF Mine will examine an interactive PDF and extract any urls (internal or external), videos (which it saves too), and what I call "comments", identified by being contained by double-square brackets, eg. [[ I am a comment ]]
+PDF Mine will examine an interactive PDF and extract any urls (internal or external), videos (which it can save too), and what I call "comments", identified by being contained by double-square brackets, eg. [[ I am a comment ]]
 
 == Positioning ==
 
@@ -18,18 +18,21 @@ Comments are interesting because of the positioning and sizing. Usually, if you 
 
 You'd typically call the following methods:
 def __init__(self, filename)
-When you init, you send it the filename. If PDF Mine has an issue with the file, it should throw up an error round about now.
+	When you init, you send it the filename. If PDF Mine has an issue with the file, it should throw up an error round about now.
 
 def parse_pages(self)
-This goes through page by page, checking for links, vids and comments, and saves any vids. It returns an array of pages, with all the stuff it found in the result.
+	This goes through page by page, checking for links, vids and comments, and saves any vids. It returns an array of pages, with all the stuff it found in the result.
 
 def pgcount(self)
-Gives you the page count. This gets called on init so you could just examine the PDFMine.pagecount property.
+	Gives you the page count. This gets called on init so you could just examine the PDFMine.pagecount property.
+
+def save_video(self, targetdir)
+	This saves all the videos we can find to targetdir
 
 def close(self)
-Closes the PDF after you're done with it.
+	Closes the PDF after you're done with it.
 
-There's an example Python script called "testpdfmine.py" which accepts a PDF filename and passes it to the PDFMine class. We then call PDFMine's "test" method, which just prints out the results of parsing the file, and saves any videos. (It pretty much does what I just described.) It's pretty basic at the moment but I'll add more functionality to the class itself over time.
+There's an example Python script called "testpdfmine.py" which accepts a PDF filename and passes it to the PDFMine class. We then call PDFMine's "test" method, which just prints out the results of parsing the file. We thensave any videos. (It pretty much does what I just described.) It's pretty basic at the moment but I'll add more functionality to the class itself over time.
 
 == Licence ==
 

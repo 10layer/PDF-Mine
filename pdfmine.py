@@ -33,6 +33,7 @@ from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfdevice import PDFDevice
 from pdfminer.converter import PDFPageAggregator
 from pdfminer.layout import LAParams, LTTextBox, LTTextLine, LTFigure, LTImage
+import os
 
 class PDFMine:
 	def __init__(self, filename):
@@ -59,6 +60,27 @@ class PDFMine:
 		for page in self.doc.get_pages():
 			count=count+1
 		return count
+		
+	def save_video(self, targetdir):
+		"""Saves all your videos to targetdir """
+		for page in self.doc.get_pages():
+			if (page.annots):
+				obj=self.doc.getobj(page.annots.objid)
+				for i in obj:
+					annotobj=i.resolve()
+					try:
+						if (annotobj["Subtype"].name=='RichMedia'):
+							linktype="media"
+							data=annotobj["RichMediaContent"].resolve()
+							dataobj=data["Assets"].resolve()
+							fstream=dataobj["Names"][1].resolve()
+							filename=fstream["F"]
+							fdata=fstream['EF']['F'].resolve().get_data()
+							f=open(os.path.join(targetdir,filename),"w")
+							f.write(fdata)
+							f.close()
+					except:
+						pass
 		
 	def _rect(self, bbox):
 		""" Changes a bounding box into something we can use 
@@ -171,10 +193,10 @@ class PDFMine:
 						dataobj=data["Assets"].resolve()
 						fstream=dataobj["Names"][1].resolve()
 						filename=fstream["F"]
-						fdata=fstream['EF']['F'].resolve().get_data()
-						f=open(filename,"w")
-						f.write(fdata)
-						f.close()
+						#fdata=fstream['EF']['F'].resolve().get_data()
+						#f=open(filename,"w")
+						#f.write(fdata)
+						#f.close()
 						link={"rect":rect, "type":linktype, "filename":filename}
 						result.append(link)
 				except:
