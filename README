@@ -1,0 +1,43 @@
+== Welcome to PDF Mine! ==
+
+This library deprecates PDF Link Finder. The big difference is that PDF Link Finder used PyPDF, and PDF Mine uses PDFMiner (hence the name). You'll need PDFMiner from https://github.com/euske/pdfminer/.
+
+== So what does it do? ==
+
+PDF Mine will examine an interactive PDF and extract any urls (internal or external), videos (which it saves too), and what I call "comments", identified by being contained by double-square brackets, eg. [[ I am a comment ]]
+
+== Positioning ==
+
+Importantly, PDF Miner finds the position of the elements.
+
+PDF positioning works differently to web positioning, as it counts size from the *bottom* of the page. Since I'd imagine you'd use PDF Mine for something web-based, I count from the top. The positioning returns x, y, width and height - perfect for web use.
+
+Comments are interesting because of the positioning and sizing. Usually, if you were to read the position of a text box, you'd just get the text width and height itself, even if it's contained in a big text box when you created it in InDesign. If you give that text box a background, it sees the text as one element, and the rectangle as something completely different. So PDF Mine looks for rectangles that overlap the text box completely, and if one exists, it returns the rectangle as the sizing parameter.
+
+== Usage ==
+
+You'd typically call the following methods:
+def __init__(self, filename)
+When you init, you send it the filename. If PDF Mine has an issue with the file, it should throw up an error round about now.
+
+def parse_pages(self)
+This goes through page by page, checking for links, vids and comments, and saves any vids. It returns an array of pages, with all the stuff it found in the result.
+
+def pgcount(self)
+Gives you the page count. This gets called on init so you could just examine the PDFMine.pagecount property.
+
+def close(self)
+Closes the PDF after you're done with it.
+
+There's an example Python script called "testpdfmine.py" which accepts a PDF filename and passes it to the PDFMine class. We then call PDFMine's "test" method, which just prints out the results of parsing the file, and saves any videos. (It pretty much does what I just described.) It's pretty basic at the moment but I'll add more functionality to the class itself over time.
+
+== Licence ==
+
+The MIT License (MIT)
+Copyright (c) 2011 10Layer Software Development Pty (Ltd) and Jason Norwood-Young
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

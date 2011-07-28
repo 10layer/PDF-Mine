@@ -82,7 +82,7 @@ class PDFMine:
 				return i
 		return False
 	
-	def _parse_pages(self):
+	def parse_pages(self):
 		result=[]
 		i=0
 		for page in self.doc.get_pages():
@@ -193,6 +193,6 @@ class PDFMine:
 			
 	def test(self):
 		print "Starting test on %s" % self.filename
-		result=self._parse_pages()
+		result=self.parse_pages()
 		print result
 		print "Found %d pages" % (self.pagecount)
