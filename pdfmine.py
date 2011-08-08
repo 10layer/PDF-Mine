@@ -1,5 +1,5 @@
 """
-This class finds PDF links, multimedia, and other stuff between two square brackets. Useful for making a digital publication.
+This class finds PDF links, multimedia, and other stuff between two square brackets. It also extracts bookmarks. Useful for making a digital publication.
 The previous version used pyPDF but this version uses PDFMiner for text bounding box support
 https://github.com/euske/pdfminer/
 
@@ -24,7 +24,7 @@ print cjson.encode(links)
 Example of result (Three pages, an internal link on the first to the second page, and an external link on the third):
 [[{"dest": 1, "pg": 0, "rect": [34, 362, 380, 34], "external": false}], false, [{"dest": "http://www.10layer.com", "pg": 2, "rect": [82, 929, 686, 610], "external": true}]]
 """
-__version__="0.4a"
+__version__="0.5a"
 __author__="Jason Norwood-Young"
 __license__="MIT"
 
@@ -119,9 +119,9 @@ class PDFMine:
 		vids=self._parse_video(page)
 		if len(vids)>0:
 			result.extend(self._parse_video(page))
-		bookmarks=self._parse_bookmark(page)
-		if len(bookmarks)>0:
-			result.extend(bookmarks)
+		links=self._parse_links(page)
+		if len(links)>0:
+			result.extend(links)
 		comments=self._parse_comments(page)
 		if len(comments)>0:
 			result.extend(comments)
@@ -146,7 +146,7 @@ class PDFMine:
 					result.append(commenttxt)
 		return result
 		
-	def _parse_bookmark(self, page):
+	def _parse_links(self, page):
 		result=[]
 		if (page.annots):
 			obj=self.doc.getobj(page.annots.objid)
@@ -193,10 +193,6 @@ class PDFMine:
 						dataobj=data["Assets"].resolve()
 						fstream=dataobj["Names"][1].resolve()
 						filename=fstream["F"]
-						#fdata=fstream['EF']['F'].resolve().get_data()
-						#f=open(filename,"w")
-						#f.write(fdata)
-						#f.close()
 						link={"rect":rect, "type":linktype, "filename":filename}
 						result.append(link)
 				except:
@@ -212,9 +208,26 @@ class PDFMine:
 				if (origbbox[0]>=otherbbox[0]) and (origbbox[1]>=otherbbox[1]) and (origbbox[2]<=otherbbox[2]) and (origbbox[3]>=otherbbox[3]):
 					return otherbbox
 		return origbbox
+	
+	"""
+	We search for 'bookmarks' set in Adobe Acrobat
+	"""
+	def get_sections(self):
+		toc=[]
+		outlines = self.doc.get_outlines()
+		for (level,title,dest,a,se) in outlines:
+			destsobj=a.resolve()
+			pgobj=destsobj["D"][0]
+			x=1;
+			for page in self.doc.get_pages():
+				if page.pageid==pgobj.objid:
+					toc.append({"name": title, "page": x});
+				x=x+1
+		return toc
 			
 	def test(self):
 		print "Starting test on %s" % self.filename
 		result=self.parse_pages()
 		print result
 		print "Found %d pages" % (self.pagecount)
+		print self.get_sections()
