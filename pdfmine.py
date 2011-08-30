@@ -12,14 +12,20 @@ http://www.opensource.org/licenses/mit-license.php
 Example of use:
 
 import pdfmine
-import cjson
+import json
 import sys
 
-filename=sys.argv
-pdf=pdflinkfinder.PdfLinkFinder(filename[1])
-if (pdf.hasExternalLinks()):
-	links=pdf.findExternalLinks()
-print cjson.encode(links)
+filename=sys.argv[1]
+targetfile=sys.argv[2]
+targetdir=sys.argv[3]
+pdf=pdfmine.PDFMine(filename)
+pdf.save_video(targetdir)
+result=pdf.parse_pages()
+sections=pdf.get_sections()
+f=open(targetfile,"w")
+f.write(json.dumps({"pageCount":pdf.pagecount,"pages":result,"sections":sections}))
+f.close()
+print "All done"
 
 Example of result (Three pages, an internal link on the first to the second page, and an external link on the third):
 [[{"dest": 1, "pg": 0, "rect": [34, 362, 380, 34], "external": false}], false, [{"dest": "http://www.10layer.com", "pg": 2, "rect": [82, 929, 686, 610], "external": true}]]
@@ -46,6 +52,7 @@ class PDFMine:
 		self.doc.set_parser(self.parser)
 		self.doc.initialize()
 		self.pagecount=self.pgcount()
+		print "Page count %i" % self.pagecount
 		if self.doc.is_extractable:
 			print "Starting extraction of %s" % self.filename
 		else:
@@ -196,7 +203,7 @@ class PDFMine:
 						link={"rect":rect, "type":linktype, "filename":filename}
 						result.append(link)
 				except:
-					return result
+					pass
 		return result
 			
 	def _intersects(self, layout, obj):
@@ -214,15 +221,23 @@ class PDFMine:
 	"""
 	def get_sections(self):
 		toc=[]
-		outlines = self.doc.get_outlines()
-		for (level,title,dest,a,se) in outlines:
-			destsobj=a.resolve()
-			pgobj=destsobj["D"][0]
-			x=1;
-			for page in self.doc.get_pages():
-				if page.pageid==pgobj.objid:
-					toc.append({"name": title, "page": x});
-				x=x+1
+		try:
+			outlines = self.doc.get_outlines()
+			for (level,title,dest,a,se) in outlines:
+				if (dest):
+				    objid=dest[0].objid
+				    pgobj=dest[0].resolve()
+				else:
+				    destsobj=a.resolve()
+				    pgobj=destsobj["D"][0]
+				    objid=pgobj.objid
+				x=1;
+				for page in self.doc.get_pages():
+				    if page.pageid==objid:
+				    	toc.append({"name": title, "page": x});
+				    x=x+1
+		except:
+			pass
 		return toc
 			
 	def test(self):
